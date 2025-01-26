@@ -82,9 +82,13 @@ fn create_cpp_project(
 }
 
 fn create_project(project_name: &str, language: &str) -> Result<(), Box<dyn std::error::Error>> {
-    let project_path = std::path::PathBuf::from("Dev").join(project_name);
+    let project_path = if project_name == "." {
+        std::env::current_dir()?
+    } else {
+        std::path::PathBuf::from("Dev").join(project_name)
+    };
 
-    if project_path.exists() {
+    if project_path.exists() && project_name != "." {
         return Err(format!(
             "Project directory already exists: {}",
             project_path.display()
@@ -97,7 +101,7 @@ fn create_project(project_name: &str, language: &str) -> Result<(), Box<dyn std:
     match language {
         "rust" => create_rust_project(&project_path)?,
         "c" => create_c_project(&project_path, project_name)?,
-        "c++" => create_cpp_project(&project_path, project_name)?,
+        "c++" | "cpp" => create_cpp_project(&project_path, project_name)?,
         _ => return Err(format!("Language not supported: {}", language).into()),
     }
 
