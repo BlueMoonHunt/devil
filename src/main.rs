@@ -28,8 +28,21 @@ fn create_c_project(
     std::fs::write(
         project_path.join("CMakeLists.txt"),
         format!(
-            "cmake_minimum_required(VERSION 3.10)\nproject({} C)\nset(CMAKE_C_STANDARD 11)\nset(CMAKE_C_FLAGS \"${{CMAKE_C_FLAGS}} -Wall -Wextra\")\nadd_executable({} src/main.c)",
-            project_name, project_name
+            "cmake_minimum_required(VERSION 3.10)\n\
+            project({} VERSION 0.1.0 LANGUAGES C)\n\n\
+            set(CMAKE_C_FLAGS \"${{CMAKE_C_FLAGS}} -Wall -Wextra -Wpedantic\")\n\
+            set(CMAKE_C_STANDARD 11)\n\
+            set(CMAKE_C_STANDARD_REQUIRED ON)\n\
+            set(CMAKE_C_FLAGS \"${{CMAKE_C_FLAGS}} -std=c${{CMAKE_C_STANDARD}}\")\n\n\
+            file(GLOB_RECURSE SOURCES \"src/*.c\")\n\n\
+            add_executable({} src/main.c ${{SOURCES}})\n\
+            target_include_directories({} PRIVATE src)\n\
+            set_target_properties({} PROPERTIES\n\
+                RUNTIME_OUTPUT_DIRECTORY \"${{CMAKE_BINARY_DIR}}/bin\"\n\
+                ARCHIVE_OUTPUT_DIRECTORY \"${{CMAKE_BINARY_DIR}}/lib\"\n\
+                LIBRARY_OUTPUT_DIRECTORY \"${{CMAKE_BINARY_DIR}}/lib\"\n\
+            )",
+            project_name, project_name, project_name, project_name
         ),
     )?;
     Ok(())
@@ -48,8 +61,21 @@ fn create_cpp_project(
     std::fs::write(
         project_path.join("CMakeLists.txt"),
         format!(
-            "cmake_minimum_required(VERSION 3.10)\nproject({} CXX)\nset(CMAKE_CXX_STANDARD 17)\nset(CMAKE_CXX_FLAGS \"${{CMAKE_CXX_FLAGS}} -Wall -Wextra -std=gnu++17\")\nadd_executable({} src/main.cpp)",
-            project_name, project_name
+            "cmake_minimum_required(VERSION 3.10)\n\
+            project({} VERSION 0.1.0 LANGUAGES CXX)\n\n\
+            set(CMAKE_CXX_FLAGS \"${{CMAKE_CXX_FLAGS}} -Wall -Wextra -Wpedantic\")\n\
+            set(CMAKE_CXX_STANDARD 17)\n\
+            set(CMAKE_CXX_STANDARD_REQUIRED ON)\n\
+            set(CMAKE_CXX_FLAGS \"${{CMAKE_CXX_FLAGS}} -std=c++${{CMAKE_CXX_STANDARD}}\")\n\n\
+            file(GLOB_RECURSE SOURCES \"src/*.cpp\")\n\n\
+            add_executable({} ${{SOURCES}})\n\
+            target_include_directories({} PRIVATE src)\n\
+            set_target_properties({} PROPERTIES\n\
+                RUNTIME_OUTPUT_DIRECTORY \"${{CMAKE_BINARY_DIR}}/bin\"\n\
+                ARCHIVE_OUTPUT_DIRECTORY \"${{CMAKE_BINARY_DIR}}/lib\"\n\
+                LIBRARY_OUTPUT_DIRECTORY \"${{CMAKE_BINARY_DIR}}/lib\"\n\
+            )",
+            project_name, project_name, project_name, project_name
         ),
     )?;
     Ok(())
@@ -98,7 +124,9 @@ fn show_status(path: &str, ignore_list: &[String]) -> Result<(), Box<dyn std::er
                 .filter(|path| {
                     path.file_name()
                         .and_then(|s| s.to_str())
-                        .map_or(true, |file_name| !ignore_list.iter().any(|ignore| ignore == file_name))
+                        .map_or(true, |file_name| {
+                            !ignore_list.iter().any(|ignore| ignore == file_name)
+                        })
                 })
                 .collect();
 
@@ -110,7 +138,12 @@ fn show_status(path: &str, ignore_list: &[String]) -> Result<(), Box<dyn std::er
                 let file_name = entry.file_name().unwrap().to_str().unwrap();
                 let is_last = i == num_entries - 1;
 
-                println!("{}{}{}", prefix, if is_last { "└── " } else { "├── " }, file_name);
+                println!(
+                    "{}{}{}",
+                    prefix,
+                    if is_last { "└── " } else { "├── " },
+                    file_name
+                );
 
                 if entry.is_dir() {
                     let new_prefix = format!("{}{}", prefix, if is_last { "    " } else { "│   " });
