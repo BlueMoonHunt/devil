@@ -177,6 +177,9 @@ fn main() -> Result<(), Box<dyn std::error::Error>> {
             show_status(path, &ignore_list)?;
         }
         "help" => print_usage(),
+        "version" => {
+            println!("devil v{}", std::env!("CARGO_PKG_VERSION"));
+        }
         _ => {
             eprintln!("Invalid command: {}", command);
             print_usage();
