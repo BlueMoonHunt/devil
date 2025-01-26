@@ -1,6 +1,6 @@
 ## Devil: A Tool for Project Management
 
-a command-line tool to simplify project management.Devil offers functionalities to:
+A command-line tool to simplify project management. Devil offers functionalities to:
 
 * Create new projects with ease
 
@@ -12,7 +12,7 @@ Devil is a Rust program. To install it, follow these steps:
 1. Clone this repository:
 
 ```bash
-git clone [https://github.com/your-username/devil.git](https://github.com/your-username/devil.git)
+git clone https://github.com/BlueMoonHunt/devil.git
 ```
 
 2. Navigate to project directory
